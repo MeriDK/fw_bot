@@ -1,6 +1,7 @@
 """
 TODO
 - change sticker sending to replying after finishing task
+- DONE
 - add time checking in scheduled file, delete here:
     should open 'today.json' at 9 am and set all values on Fault
 - finish pinning players at 9:01 13:00 19:00 22:00 7:00
@@ -47,8 +48,8 @@ def get_sticker(user_id):
 @bot.message_handler(regexp='Ты завершил(а|) задание замка!')
 def get_finished_daylik(message):
 
-    # should work only in our chat
-    if message.chat.id == chat_id:
+    # should work only in our chat (commented out for debug purposes)
+    #if message.chat.id == chat_id:
 
         # check if message from fw bot
         if message.forward_from is not None and message.forward_from.id == fw_id:
@@ -62,10 +63,12 @@ def get_finished_daylik(message):
             if today[str(user_id)] is False:
 
                 # TODO add reply
-                bot.send_sticker(chat_id, get_sticker(user_id))
+                bot.send_sticker(chat_id, get_sticker(user_id), reply_to_message_id = message.message_id)
 
                 # mark user's task as finished
-                today[str(user_id)] = True
+                # DEBUG
+                if user_id!=409020404:
+                    today[str(user_id)] = True
                 with open('today.json', 'w') as f:
                     f.write(json.dumps(today))
 
@@ -80,9 +83,9 @@ def get_finished_daylik(message):
             else:
                 # user already finished task
                 bot.reply_to(message, 'Совсем ничего нового 🙄\nХвастаешься?')
-        else:
+        #else:
             # not our chat
-            bot.reply_to(message, 'Киш')
+        #    bot.reply_to(message, 'Киш')
 
 
 # answer on command /topchik
@@ -90,7 +93,7 @@ def get_finished_daylik(message):
 def top_func(message):
 
     # should work in our chat only
-    if message.chat.id == chat_id:
+    #if message.chat.id == chat_id:
         with open('top.json', 'r') as f:
             top = json.loads(f.read())
             sorted_top = collections.OrderedDict(sorted(top.items(), key=lambda kv: kv[1], reverse=True))
@@ -100,9 +103,9 @@ def top_func(message):
                 ans += f'{i}. {key}: {val}\n'
                 i += 1
             bot.reply_to(message, ans)
-    else:
+    #else:
         # not our chat
-        bot.reply_to(message, 'Киш')
+        # bot.reply_to(message, 'Киш')
 
 
 bot.polling()

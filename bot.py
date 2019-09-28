@@ -1,14 +1,9 @@
 """
 TODO
-- change sticker sending to replying after finishing task
-- DONE
 - add time checking in scheduled file, delete here:
     should open 'today.json' at 9 am and set all values on Fault
 - finish pinning players at 9:01 13:00 19:00 22:00 7:00
     should send message 'it's high time to get/finish task'
-- add /pin command
-    should pin everyone who hasn't finished task by this time yet
-    only 5 users per message
 TODO
 """
 
@@ -20,6 +15,7 @@ from random import randint
 import telebot
 import config
 import collections
+from telebot.apihelper import ApiException
 
 
 TOKEN = config.TOKEN
@@ -38,11 +34,29 @@ def check_time(timestamp):
 
 
 # get sticker to answer on finished task
-def get_sticker(user_id):
-    if user_id == config.sasha_id:
+def get_sticker(user_tag):
+    if user_tag == '@Sangu_007':
         return config.sasha_sticker
-    return stickers[randint(0, len(stickers))]
+    return stickers[randint(0, len(stickers)-1)]
 
+# parse command '/pin'
+@bot.message_handler(commands=['pin'])
+def pin(message):
+    with open('today.json', 'r') as f:
+        today = json.loads(f.read())
+    counter = 0
+    message_text = ''
+    for k, v in today.items():
+        # parse out by 5 users per message
+        if counter==5:
+            bot.send_message(message.chat.id, message_text)
+            counter=0
+            message_text=''
+        if v==False:
+            message_text+=f'{k} '
+            counter+=1
+    bot.send_message(message.chat.id, message_text)
+    bot.send_message(message.chat.id, 'Рабы галерные, а ну живо дейлики поделали!')
 
 # parse message with words 'Ты завершил/ла задание замка!' in it
 @bot.message_handler(regexp='Ты завершил(а|) задание замка!')
@@ -53,22 +67,18 @@ def get_finished_daylik(message):
 
         # check if message from fw bot
         if message.forward_from is not None and message.forward_from.id == fw_id:
-
-            user_id = message.from_user.id
+            
+            user_tag = message.from_user.username
 
             with open('today.json', 'r') as f:
                 today = json.loads(f.read())
 
             # check if user already finished task
-            if today[str(user_id)] is False:
-
-                # TODO add reply
-                bot.send_sticker(chat_id, get_sticker(user_id), reply_to_message_id = message.message_id)
-
+            if today['@'+user_tag] is False:
+                #send reply
+                bot.send_sticker(message.chat.id, get_sticker(user_tag), reply_to_message_id=message.message_id)
                 # mark user's task as finished
-                # DEBUG
-                if user_id!=409020404:
-                    today[str(user_id)] = True
+                today['@'+user_tag] = True
                 with open('today.json', 'w') as f:
                     f.write(json.dumps(today))
 
@@ -76,7 +86,7 @@ def get_finished_daylik(message):
                 with open('top.json', 'r') as f:
                     top = json.loads(f.read())
 
-                top[config.users[user_id][1:]] += 1
+                top[user_tag] += 1
 
                 with open('top.json', 'w') as f:
                     f.write(json.dumps(top))

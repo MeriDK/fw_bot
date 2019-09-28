@@ -18,11 +18,3 @@ chat_id = -1001416070393
 fw_id = 674929718
 
 sasha_sticker = 'CAADAgADygEAAj-xbANVvn2dRBGc8xYE'
-sasha_id = 398086770
-
-users = {189747732: '@evgeniyapuplikova', 352490680: '@LTataSPB', 409020404: '@IHaveErred', 107572276: '@seagull13',
-         263530529: '@Chydak', 541822202: '@GoldPPuma', 304107214: '@loli_ebir', my_user_id: my_user_name,
-         sasha_id: '@Sangu_007'}
-
-users_id = list(users.keys())
-users_user_names = list(users.values())

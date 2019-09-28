@@ -1,12 +1,3 @@
-"""
-TODO
-- add time checking in scheduled file, delete here:
-    should open 'today.json' at 9 am and set all values on Fault
-- finish pinning players at 9:01 13:00 19:00 22:00 7:00
-    should send message 'it's high time to get/finish task'
-TODO
-"""
-
 from datetime import datetime
 import time
 import json
@@ -25,7 +16,7 @@ fw_id = config.fw_id
 chat_id = config.chat_id
 stickers = config.stickers
 today = datetime.today()
-last_refresh = datetime(today.year,today.month,today.day,9)
+last_refresh = datetime(today.year,today.month,today.day,9).timestamp()
 
 # get sticker to answer on finished task
 def get_sticker(user_tag):
@@ -49,8 +40,8 @@ def pin(message):
         if v==False:
             message_text+=f'{k} '
             counter+=1
-    bot.send_message(message.chat.id, message_text)
-    bot.send_message(message.chat.id, 'Рабы галерные, а ну живо дейлики поделали!')
+    bot.send_message(chat_id, message_text)
+    bot.send_message(chat_id, 'Рабы галерные, а ну живо дейлики поделали!')
     
 # refreshes time check for messages as well as whether the daily has been given in today
 def refresh():
@@ -99,7 +90,7 @@ def get_finished_daylik(message):
                 today = json.loads(f.read())
 
             # check if user already finished task and if the message is from today
-            if today['@'+user_tag] is False or message.forward_date<last_refresh:
+            if today['@'+user_tag] is False and message.forward_date>last_refresh:
                 #send reply
                 bot.send_sticker(message.chat.id, get_sticker(user_tag), reply_to_message_id=message.message_id)
                 # mark user's task as finished

@@ -7,6 +7,7 @@ import schedule
 import telebot
 import config
 import collections
+import re
 from multiprocessing import Process
 
 TOKEN = config.TOKEN
@@ -76,7 +77,7 @@ def run_schedule():
         time.sleep(1)
 
 # parse message with words 'Ты завершил/ла задание замка!' in it. Additionaly, allows Meri to mark one's daily as done
-@bot.message_handler(regexp='Ты завершил(а|) задание замка!')
+@bot.message_handler(regexp='Ты завершила{0,1} задание замка!')
 def get_finished_daylik(message):
 
     # should work only in our chat
@@ -153,6 +154,34 @@ def count_today(message):
     else:
         bot.reply_to(message, 'Киш')       
 
+# reacts to messages like "Ты занят другим делом ещё 2 мин. 36 сек." to remind the sender of their duties
+@bot.message_handler(regexp='Ты занята{0,1} другим делом ещё')
+def remind(message):
+    # regex for extracting delay from message
+    wait_reg = re.compile(r'(?:(\d+) мин\.)*(?: (\d+) сек\.)*$')
+    times = wait_reg.search(message.text)
+    min = times.group(1)
+    sec = times.group(2)
+    sec = 0 if sec is None else int(sec)
+    if min is not None:
+        sec+=int(min)*60
+    #sends a delayed reminder through the power of multiprocessing
+    rem = Process(target=remind_helper, args=(message,sec,))
+    rem.start()
+
+# small function for being timed out in a separate process        
+def remind_helper(message,seconds):
+    time.sleep(seconds)
+    bot.reply_to(message, "Иди мобов бей!")
+    
+# reminds people to meditate based on the amount of spirit in their report
+@bot.message_handler(regexp=r'\(стало ([\d.]+)%\)')
+def meditation(message):
+    if message.forward_from is not None and message.forward_from.id == fw_id:
+        spirit_reg = re.compile(r'\(стало ([\d.]+)%\)')
+        spirit = float(spirit_reg.search(message.text).group(1))
+        if spirit>=50:
+            bot.send_message(chat_id,f'@{message.from_user.username} замок сам себя не построит')
 
 # answer on command /topchik
 @bot.message_handler(commands=['topchik'])

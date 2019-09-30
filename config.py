@@ -17,4 +17,4 @@ chat_id = -1001416070393
 
 fw_id = 674929718
 
-sasha_sticker = 'CAADAgADygEAAj-xbANVvn2dRBGc8xYE'
+sasha_sticker = 'CAADBAADBAADclK6Fx-DbI9cdx7aFgQ'

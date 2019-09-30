@@ -76,7 +76,7 @@ def run_schedule():
         schedule.run_pending()
         time.sleep(1)
 
-# parse message with words 'Ты завершил/ла задание замка!' in it. Additionaly, allows Meri to mark one's daily as done
+# parse message with words 'Ты завершил/ла задание замка!' in it
 @bot.message_handler(regexp='Ты завершила{0,1} задание замка!')
 def get_finished_daylik(message):
 
@@ -115,7 +115,7 @@ def get_finished_daylik(message):
         # not our chat
         bot.reply_to(message, 'Киш')
         
-
+# Allows Meri to mark one's daily as done
 @bot.message_handler(commands=['unpin'])
 def count_today(message):
     #check for user and chat
@@ -205,9 +205,6 @@ def top_func(message):
 if __name__=='__main__':
     sch = Process(target=run_schedule)
     sch.start()
-    try:
-        bot.polling()
-    except Exception:
-        schedule_work=False
+    bot.infinity_polling(True)
 
 
